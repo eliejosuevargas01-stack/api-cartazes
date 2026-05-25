@@ -21,6 +21,10 @@ lista_de_produtos = []
 # // Pegue os dados (nome, validade, quantidade) e use o método .append() na lista.
 # // Exemplo: lista_de_produtos.append(novo_item)
 @app.post("/adicionar")
+async def adicionar_produto(request: Request):
+    dados = await request.json()
+    lista_de_produtos.append(dados)
+    return {"status": "Produto adicionado"}
 
 # 5. // ROTA PARA GERAR O PDF E LIMPAR
 # // Use @app.post("/finalizar")
