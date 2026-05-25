@@ -1,9 +1,9 @@
 import requests
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, landscape
 from pydantic import BaseModel
-from typing import List
+from typing import List, Union
 
 class Produto(BaseModel):
     produto: str
@@ -23,9 +23,17 @@ def health_check_alternate():
     return {"status": "ok"}
 
 @app.post("/gerar-pdf")
-def processar_lista(produtos: List[Produto], webhook_url: str = "https://myn8n.seommerce.shop/webhook/receber-pdf-pronto"):
+def processar_lista(body: Union[List[Produto], dict] = Body(...), webhook_url: str = "https://myn8n.seommerce.shop/webhook/receber-pdf-pronto"):
     try:
         print("Iniciando processamento...")
+        
+        # Se for dict com 'produtos', pega o array
+        if isinstance(body, dict):
+            produtos_list = body.get('produtos', [])
+            produtos = [Produto(**p) if isinstance(p, dict) else p for p in produtos_list]
+        else:
+            # Se for array direto
+            produtos = body
         
         nome_arquivo = "cartazes.pdf"
         folha_paisagem = landscape(A4)
