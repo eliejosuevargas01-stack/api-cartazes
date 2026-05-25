@@ -5,6 +5,7 @@ from reportlab.lib.pagesizes import A4, landscape
 from pydantic import BaseModel
 from typing import List, Union
 import base64
+import os
 
 class Produto(BaseModel):
     produto: str
@@ -19,6 +20,11 @@ class Produto(BaseModel):
 
 app = FastAPI()
 
+WEBHOOK_URL = os.getenv(
+    "N8N_WEBHOOK_URL",
+    "https://myn8n.seommerce.shop/webhook/receber-pdf-pronto",
+)
+
 @app.get("/")
 def health_check():
     """Endpoint de health check para o Coolify"""
@@ -30,7 +36,7 @@ def health_check_alternate():
     return {"status": "ok"}
 
 @app.post("/gerar-pdf")
-def processar_lista(body: Union[List[Produto], dict] = Body(...), webhook_url: str = "https://myn8n.seommerce.shop/webhook/receber-pdf-pronto"):
+def processar_lista(body: Union[List[Produto], dict] = Body(...)):
     try:
         print("Iniciando processamento...")
         
@@ -64,7 +70,9 @@ def processar_lista(body: Union[List[Produto], dict] = Body(...), webhook_url: s
         
         with open(nome_arquivo,'rb') as f:
             files = {'file': (nome_arquivo, f, 'application/pdf')}
-            requests.post(webhook_url, files=files)
+            response = requests.post(WEBHOOK_URL, files=files, timeout=30)
+            response.raise_for_status()
+            print(f"Webhook enviado com sucesso: {response.status_code}")
         
         return {"message": "PDF pronto para impressão!"}
     
