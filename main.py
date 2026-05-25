@@ -2,6 +2,7 @@ import requests
 from fastapi import FastAPI, Body
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, landscape
+from reportlab.pdfbase.pdfmetrics import stringWidth
 from pydantic import BaseModel
 from typing import List, Union
 import base64
@@ -35,6 +36,20 @@ def health_check_alternate():
     """Endpoint de health check alternativo"""
     return {"status": "ok"}
 
+
+def _ajustar_fonte_produto(texto: str, largura_maxima: float) -> int:
+    fonte = "Helvetica-Bold"
+    tamanho_maximo = 100
+    tamanho_minimo = 28
+
+    for tamanho in range(tamanho_maximo, tamanho_minimo - 1, -2):
+        largura_texto = stringWidth(texto, fonte, tamanho)
+        if largura_texto <= largura_maxima:
+            return tamanho
+
+    return tamanho_minimo
+
+
 @app.post("/gerar-pdf")
 def processar_lista(body: Union[List[Produto], dict] = Body(...)):
     try:
@@ -51,15 +66,20 @@ def processar_lista(body: Union[List[Produto], dict] = Body(...)):
         nome_arquivo = "cartazes.pdf"
         folha_paisagem = landscape(A4)
         c = canvas.Canvas(nome_arquivo, pagesize=folha_paisagem)
-        
+
         largura, altura = folha_paisagem
         centro = largura / 2
 
         for item in produtos:
             print(f"Processando produto: {item.produto}")
             for _ in range(item.quantidade):
-                c.setFont("Helvetica-Bold", 100)
-                c.drawCentredString(centro, 400, item.produto.upper())
+                nome_produto = item.produto.upper()
+                largura_util = largura - 120
+                tamanho_fonte = _ajustar_fonte_produto(nome_produto, largura_util)
+
+                c.setFont("Helvetica-Bold", tamanho_fonte)
+                c.drawCentredString(centro, 400, nome_produto)
+
                 c.setFont("Helvetica-Bold", 120)
                 c.drawCentredString(centro, 250, item.validade)
                 c.showPage()
