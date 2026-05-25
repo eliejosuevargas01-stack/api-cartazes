@@ -8,7 +8,13 @@ from typing import List, Union
 class Produto(BaseModel):
     produto: str
     validade: str
-    quantidade: int
+    quantidade: Union[int, str]
+    
+    def __init__(self, **data):
+        super().__init__(**data)
+        # Converte quantidade para int se for string
+        if isinstance(self.quantidade, str):
+            self.quantidade = int(self.quantidade)
 
 app = FastAPI()
 
