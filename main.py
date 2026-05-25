@@ -36,8 +36,8 @@ def processar_lista(produtos:List[Produto], webhook_url: str = "https://myn8n.se
     c.save()
     print("Arquivo salvo com sucesso!") # <--- Verifique se isso aparece
     
-whith open(nome_arquivo,'rb') as f:
-    files = {'file': (nome_arquivo, f, 'application/pdf')}
-    requests.post(webhook_url, file=files)
-
+    with open(nome_arquivo,'rb') as f:
+        files = {'file': (nome_arquivo, f, 'application/pdf')}
+        requests.post(webhook_url, file=files)
+    
     return {"message": "PDF pronto para impressão!"}
