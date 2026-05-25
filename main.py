@@ -4,6 +4,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, landscape
 from pydantic import BaseModel
 from typing import List, Union
+import base64
 
 class Produto(BaseModel):
     produto: str
