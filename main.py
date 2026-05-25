@@ -10,6 +10,9 @@ class Produto(BaseModel):
     validade: str
     quantidade: int
 
+class ProdutoRequest(BaseModel):
+    produtos: List[Produto]
+
 app = FastAPI()
 
 @app.get("/")
@@ -23,7 +26,7 @@ def health_check_alternate():
     return {"status": "ok"}
 
 @app.post("/gerar-pdf")
-def processar_lista(produtos:List[Produto], webhook_url: str = "https://myn8n.seommerce.shop/webhook/receber-pdf-pronto"):
+def processar_lista(request: ProdutoRequest, webhook_url: str = "https://myn8n.seommerce.shop/webhook/receber-pdf-pronto"):
     try:
         print("Iniciando processamento...")
         
@@ -34,7 +37,7 @@ def processar_lista(produtos:List[Produto], webhook_url: str = "https://myn8n.se
         largura, altura = folha_paisagem
         centro = largura / 2
 
-        for item in produtos:
+        for item in request.produtos:
             print(f"Processando produto: {item.produto}")
             for _ in range(item.quantidade):
                 c.setFont("Helvetica-Bold", 100)
