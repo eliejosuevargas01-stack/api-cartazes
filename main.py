@@ -17,6 +17,11 @@ def health_check():
     """Endpoint de health check para o Coolify"""
     return {"status": "ok", "message": "API de cartazes funcionando"}
 
+@app.get("/health_check")
+def health_check_alternate():
+    """Endpoint de health check alternativo"""
+    return {"status": "ok"}
+
 @app.post("/gerar-pdf")
 def processar_lista(produtos:List[Produto], webhook_url: str = "https://myn8n.seommerce.shop/webhook/receber-pdf-pronto"):
     try:
